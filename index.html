@@ -17,25 +17,77 @@
                 console.log('init');
                 var el = this.el;  // <a-box>
                 console.log(el);
-                /*el.addEventListener('mouseenter', function () {
-                 el.setAttribute('color', 'green');  
-                 });
-                 el.addEventListener('mouseleave', function () {
-                 el.setAttribute('color', 'red');
-                 });*/
+                
                 el.addEventListener('mouseup', function () {
 
 
                     var scene = el.parentNode.parentNode;
+                    
+                    
+                    var answerQuestion = function(number) {
+                        var url = 'https://api.edigitalresearch.com/survey/oneshot/s/ESV-315621653/FilmRating/' + number;
+                        console.log(url);
+                        var request = new XMLHttpRequest();
+                        request.open('GET', url);
+                        request.send();
+                    };
+
+                    var size = 0.5;
+                    var spacing = 0.35;
+
+                    var totalNum = 5;
+
+                    var createSphere = function (num) {
+                        ;
+                        var entity = document.createElement('a-plane');
+                        entity.setAttribute('position', Math.floor((num - (totalNum / 2))) - (size / 2) - ((num - totalNum) * spacing) + ' 0 0');
+                        entity.setAttribute('rotation', '270 0 0');
+                        entity.setAttribute('scale', size + ' ' + size + ' ' + num);
+//                        entity.setAttribute('color', colors[num]);
+                        entity.setAttribute('src', colors[num-1]);
+                        entity.classList.add('edr-answer');
+                        
+                        
+                        
+                        el.parentNode.appendChild(entity);
+                        entity.addEventListener('mouseup', function () {
+                            answerQuestion(num);
+                            
+                            scene.querySelectorAll('.edr-answer').forEach(function (entityToDelete) {
+                                console.log(entityToDelete);
+                                if (entityToDelete !== entity) {
+                                    entityToDelete.parentNode.removeChild(entityToDelete);
+                                }
+                            });
+                            var animation = document.createElement('a-animation');
+
+                            animation.setAttribute('attribute', 'scale');
+                            animation.setAttribute('dur', '500');
+                            animation.setAttribute('from', size + ' ' + size + ' ' + num);
+                            var newSize = 2;
+                            animation.setAttribute('to', newSize + ' ' + newSize + ' ' + num);
+
+                            entity.appendChild(animation);
+                            entity.setAttribute('position', '0 0 0');
+                            
+                        });
+                    };
 
 
-                    var entity = document.createElement('a-sphere');
-                    entity.setAttribute('position', '1 1 1');
-                    entity.setAttribute('radius', '1');
-                    entity.setAttribute('color', '#EF2D5E');
-                    el.parentNode.appendChild(entity);
+                    var colors = [
+                            'https://public.edigitalresearch.com/fs/fs/FSM-406019053/f/FSF-488048775/pouting-face_1f621.png',
+                            'https://public.edigitalresearch.com/fs/fs/FSM-406019053/f/FSF-190601771/white-frowning-face_2639.png',
+                            'https://public.edigitalresearch.com/fs/fs/FSM-406019053/f/FSF-482501885/neutral-face_1f610.png',
+                            'https://public.edigitalresearch.com/fs/fs/FSM-406019053/f/FSF-810359877/slightly-smiling-face_1f642.png',
+                            'https://public.edigitalresearch.com/fs/fs/FSM-406019053/f/FSF-520360246/grinning-face_1f600.png',
+                    ];
+                    
+                    
+                    for (var i =1; i <= totalNum; i++) {
+                        createSphere(i);
+                    }
 
-                    el.setAttribute('color', 'blue');
+                    el.parentNode.removeChild(el);
                 });
             }
         });
@@ -46,13 +98,14 @@
 <a-scene embedded arjs>
     <a-marker preset="hiro">
 
-        <a-box position="0 0 0" rotation="30 30 0" color="skyblue" handle-events>
+        <a-plane color="#CCC" height="2" width="2" handle-events>
+
+            <a-text value="Hello, World!"  rotation="270 0 0" color="black"></a-text>
             <!--<a-animation attribute="rotation" begin="click" dur="500" fill="backwards" to="30 30 360"></a-animation>-->
-        </a-box>
-        <a-text value="Hello, World!"  rotation="270 0 0" color="black"></a-text>
+        </a-plane>
     </a-marker>
     <a-entity position="0 0 0">
-        <a-camera cursor="fuse: true; rayOrigin:mouse"></a-camera>
+        <a-camera cursor="rayOrigin:mouse"></a-camera>
     </a-entity>
     <!--<a-entity camera look-controls mouse-cursor></a-entity>			-->
 </a-scene>
