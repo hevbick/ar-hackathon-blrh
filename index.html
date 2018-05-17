@@ -42,12 +42,16 @@
             };
 
 
-            var answerQuestion = function (question, answer) {
-                var url = 'https://api.edigitalresearch.com/survey/oneshot/s/' + question.survey + '/' + question.code + '/' + answer;
-                console.log(url);
+            var oneshot = function (question, answer) {
+                var url = 'https://api.edigitalresearch.com/survey/oneshot';
+                var body = {
+                    's': question.survey,
+                };
+                body[question.code] = answer;
+                console.log(body);
                 var request = new XMLHttpRequest();
-                request.open('GET', url);
-                request.send();
+                request.open('POST', url);
+                request.send(body);
             };
 
 
@@ -79,7 +83,7 @@
                 return element;
             };
 
-            var createOption = function (num, option, question) {
+            var createOption = function (num, option, question, scene) {
                 var theta = (-Math.PI / (question.options.length - 1)) * (num) - (Math.PI / 2);
 
 
@@ -92,13 +96,11 @@
                     'src': '#asset_' + option.answer,
                 });
 
-
                 entity.classList.add('edr-answer');
                 entity.appendChild(createAnimation('position', '0 0 0', Math.sin(theta) + ' ' + Math.cos(theta) + ' 0', 1000));
 
-
                 entity.addEventListener('mouseup', function () {
-                    answerQuestion(question, option.answer);
+                    oneshot(question, option.answer);
 
                     // Remove all of the other options.
                     scene.querySelectorAll('.edr-answer').forEach(function (entityToDelete) {
@@ -113,84 +115,67 @@
                     entity.appendChild(createAnimation('position', entity.getAttribute('position'), '0 0 0', 500));
 
                 });
-                
+
                 return entity;
             };
 
-            
-            var scene, entity, camera;
+            var buildSceneForQuestion = function (question) {
 
-            scene = createElement('a-scene', {'embedded': '', 'arjs': ''});
-            entity = createElement('a-entity', {'position': '0 0 0'});
-            camera = createElement('a-camera', {'cursor': 'rayOrigin:mouse'});
+                var scene, entity, camera, marker, trigger, questionText, assets;
 
-            entity.appendChild(camera);
-            scene.appendChild(entity);
+                scene  = createElement('a-scene', {'embedded': '', 'arjs': ''});
 
-            document.body.appendChild(scene);
+                entity = createElement('a-entity', {'position': '0 0 0'});
+                camera = createElement('a-camera', {'cursor': 'rayOrigin:mouse'});
+                entity.appendChild(camera);
+                scene.appendChild(entity);
 
-            var buildQuestion = function (question) {
-
-                var marker = createElement('a-marker', {'preset': 'hiro'});
-
-                var trigger = createElement('a-box', {
+                marker = createElement('a-marker', {'preset': 'hiro'});
+                trigger = createElement('a-plane', {
                     'color' : 'red',
                     'width' : '1',
                     'height' : '1',
+                    'rotation' : '270 0 0',
                     'handle-events': ''
                 });
-
-
-                var questionText = createElement('a-text', {
+                questionText = createElement('a-text', {
                     'value': question.text,
                     'color': 'black',
-                    'rotation': '270 0 0'
                 });
-
-                var assets = document.createElement('a-assets');
-
-                // Add the image assets for the question options
-                for (var i = 0; i < question.options.length; i++) {
-                    assets.appendChild(createElement('img', {
-                        'id': 'asset_' + options[i].answer,
-                        'src': options[i].image
-                    }));
-                }
-
-
                 trigger.appendChild(questionText);
                 marker.appendChild(trigger);
+
+                assets = createElement('a-assets');
+                // Add the image assets for the question options
+                for (var i = 0; i < question.options.length; i++) {
+                    assets.appendChild(createElement('img', {'id': 'asset_' + options[i].answer, 'src': options[i].image}));
+                }
+
                 scene.appendChild(assets);
                 scene.appendChild(marker);
-                scene.appendChild(createElement('a-obj-model', {
-                    'src': '#trigger-obj',
-                    'mtl': '#trigger-mtl',
-                    'position': '0 0 -3',
-                }));
 
                 AFRAME.registerComponent('handle-events', {
                     init: function () {
                         var trigger = this.el;  // <a-box>
 
-                        trigger.addEventListener('mouseup', function () {
-
+                        var openQuestion = function () {
                             for (var i = 0; i < question.options.length; i++) {
-                                trigger.parentNode.appendChild(createOption(i, question.options[i], question));
+                                trigger.parentNode.appendChild(createOption(i, question.options[i], question, scene));
                             }
 
                             trigger.parentNode.removeChild(trigger);
-                        });
+                        };
+                        trigger.addEventListener('mouseup', openQuestion);
                     }
                 });
 
-
+                return scene;
             };
 
-            buildQuestion(question);
+            document.body.appendChild(buildSceneForQuestion(question));
 
         });
     </script>
-
 </head>
 <body style='margin : 0px; overflow: hidden;'></body>
 </html>
