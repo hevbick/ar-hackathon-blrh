@@ -2,113 +2,195 @@
 <html>
 <head>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
 
 
     <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script>
-    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.5.0/aframe/build/aframe-ar.js"> </script>
+    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.5.0/aframe/build/aframe-ar.js"></script>
     <!--<script src="https://rawgit.com/mayognaise/aframe-mouse-cursor-component/master/dist/aframe-mouse-cursor-component.min.js"></script>-->
 
 
     <script>
-        AFRAME.registerComponent('handle-events', {
-            init: function () {
-                console.log('init');
-                var el = this.el;  // <a-box>
-                console.log(el);
-                
-                el.addEventListener('mouseup', function () {
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+//        var options = [
+//            {'answer': 1, 'image': 'https://public.edigitalresearch.com/fs/fs/FSM-406019053/f/FSF-488048775/pouting-face_1f621.png',},
+//            {'answer': 2, 'image': 'https://public.edigitalresearch.com/fs/fs/FSM-406019053/f/FSF-190601771/white-frowning-face_2639.png',},
+//            {'answer': 3, 'image': 'https://public.edigitalresearch.com/fs/fs/FSM-406019053/f/FSF-482501885/neutral-face_1f610.png',},
+//            {'answer': 4, 'image': 'https://public.edigitalresearch.com/fs/fs/FSM-406019053/f/FSF-810359877/slightly-smiling-face_1f642.png',},
+//            {'answer': 5, 'image': 'https://public.edigitalresearch.com/fs/fs/FSM-406019053/f/FSF-520360246/grinning-face_1f600.png',},
+//        ];
+
+            var options = [
+                {
+                    'answer': 0,
+                    'image': 'https://public.edigitalresearch.com/fs/fs/FSM-406019053/f/FSF-291692079/thumbs-down-sign_1f44e.png',
+                },
+                {
+                    'answer': 1,
+                    'image': 'https://public.edigitalresearch.com/fs/fs/FSM-406019053/f/FSF-172749579/thumbs-up-sign_1f44d.png',
+                },
+            ];
 
 
-                    var scene = el.parentNode.parentNode;
-                    
-                    
-                    var answerQuestion = function(number) {
-                        var url = 'https://api.edigitalresearch.com/survey/oneshot/s/ESV-315621653/FilmRating/' + number;
-                        console.log(url);
-                        var request = new XMLHttpRequest();
-                        request.open('GET', url);
-                        request.send();
-                    };
-
-                    var size = 0.5;
-                    var spacing = 0.35;
-
-                    var totalNum = 5;
-
-                    var createSphere = function (num) {
-                        ;
-                        var entity = document.createElement('a-plane');
-                        entity.setAttribute('position', Math.floor((num - (totalNum / 2))) - (size / 2) - ((num - totalNum) * spacing) + ' 0 0');
-                        entity.setAttribute('rotation', '270 0 0');
-                        entity.setAttribute('scale', size + ' ' + size + ' ' + num);
-//                        entity.setAttribute('color', colors[num]);
-                        entity.setAttribute('src', colors[num-1]);
-                        entity.classList.add('edr-answer');
-                        
-                        
-                        
-                        el.parentNode.appendChild(entity);
-                        entity.addEventListener('mouseup', function () {
-                            answerQuestion(num);
-                            
-                            scene.querySelectorAll('.edr-answer').forEach(function (entityToDelete) {
-                                console.log(entityToDelete);
-                                if (entityToDelete !== entity) {
-                                    entityToDelete.parentNode.removeChild(entityToDelete);
-                                }
-                            });
-                            var animation = document.createElement('a-animation');
-
-                            animation.setAttribute('attribute', 'scale');
-                            animation.setAttribute('dur', '500');
-                            animation.setAttribute('from', size + ' ' + size + ' ' + num);
-                            var newSize = 2;
-                            animation.setAttribute('to', newSize + ' ' + newSize + ' ' + num);
-
-                            entity.appendChild(animation);
-                            entity.setAttribute('position', '0 0 0');
-                            
-                        });
-                    };
+            var question = {
+                'text': 'Is this shit?',
+                'survey': 'ESV-315621653',
+                'code': 'IsItShit',
+                'options': options,
+            };
 
 
-                    var colors = [
-                            'https://public.edigitalresearch.com/fs/fs/FSM-406019053/f/FSF-488048775/pouting-face_1f621.png',
-                            'https://public.edigitalresearch.com/fs/fs/FSM-406019053/f/FSF-190601771/white-frowning-face_2639.png',
-                            'https://public.edigitalresearch.com/fs/fs/FSM-406019053/f/FSF-482501885/neutral-face_1f610.png',
-                            'https://public.edigitalresearch.com/fs/fs/FSM-406019053/f/FSF-810359877/slightly-smiling-face_1f642.png',
-                            'https://public.edigitalresearch.com/fs/fs/FSM-406019053/f/FSF-520360246/grinning-face_1f600.png',
-                    ];
-                    
-                    
-                    for (var i =1; i <= totalNum; i++) {
-                        createSphere(i);
+            var answerQuestion = function (question, answer) {
+                var url = 'https://api.edigitalresearch.com/survey/oneshot/s/' + question.survey + '/' + question.code + '/' + answer;
+                console.log(url);
+                var request = new XMLHttpRequest();
+                request.open('GET', url);
+                request.send();
+            };
+
+
+            var createAnimation = function (attribute, from, to, duration, delay) {
+                var animation = document.createElement('a-animation');
+
+                duration = duration || 0;
+                delay = delay || 0;
+
+                animation.setAttribute('attribute', attribute);
+                animation.setAttribute('dur', duration);
+                animation.setAttribute('delay', delay);
+                animation.setAttribute('from', from);
+                animation.setAttribute('to', to);
+
+                return animation;
+            };
+
+
+            var createElement = function (name, attributes) {
+                var element = document.createElement(name);
+                for (var attributeName in attributes) {
+                    if (!attributes.hasOwnProperty(attributeName)) {
+                        continue;
                     }
+                    element.setAttribute(attributeName, attributes[attributeName]);
+                }
 
-                    el.parentNode.removeChild(el);
+                return element;
+            };
+
+            var createOption = function (num, option, question) {
+                var theta = (-Math.PI / (question.options.length - 1)) * (num) - (Math.PI / 2);
+
+
+                var optionSize = 0.65;
+
+
+                var entity = createElement('a-plane', {
+                    'rotation': '270 0 0',
+                    'scale': optionSize + ' ' + optionSize + ' ' + num,
+                    'src': '#asset_' + option.answer,
                 });
-            }
+
+
+                entity.classList.add('edr-answer');
+                entity.appendChild(createAnimation('position', '0 0 0', Math.sin(theta) + ' ' + Math.cos(theta) + ' 0', 1000));
+
+
+                entity.addEventListener('mouseup', function () {
+                    answerQuestion(question, option.answer);
+
+                    // Remove all of the other options.
+                    scene.querySelectorAll('.edr-answer').forEach(function (entityToDelete) {
+                        if (entityToDelete !== entity) {
+                            entityToDelete.parentNode.removeChild(entityToDelete);
+                        }
+                    });
+
+                    // Apply animations to the selected option
+                    entity.appendChild(createAnimation('scale', entity.getAttribute('scale'), '2 2 2', 500));
+                    entity.appendChild(createAnimation('material.opacity', 1, 0, 1500, 500));
+                    entity.appendChild(createAnimation('position', entity.getAttribute('position'), '0 0 0', 500));
+
+                });
+                
+                return entity;
+            };
+
+            
+            var scene, entity, camera;
+
+            scene = createElement('a-scene', {'embedded': '', 'arjs': ''});
+            entity = createElement('a-entity', {'position': '0 0 0'});
+            camera = createElement('a-camera', {'cursor': 'rayOrigin:mouse'});
+
+            entity.appendChild(camera);
+            scene.appendChild(entity);
+
+            document.body.appendChild(scene);
+
+            var buildQuestion = function (question) {
+
+                var marker = createElement('a-marker', {'preset': 'hiro'});
+
+                var trigger = createElement('a-box', {
+                    'color' : 'red',
+                    'width' : '1',
+                    'height' : '1',
+                    'handle-events': ''
+                });
+
+
+                var questionText = createElement('a-text', {
+                    'value': question.text,
+                    'color': 'black',
+                    'rotation': '270 0 0'
+                });
+
+                var assets = document.createElement('a-assets');
+
+                // Add the image assets for the question options
+                for (var i = 0; i < question.options.length; i++) {
+                    assets.appendChild(createElement('img', {
+                        'id': 'asset_' + options[i].answer,
+                        'src': options[i].image
+                    }));
+                }
+
+
+                trigger.appendChild(questionText);
+                marker.appendChild(trigger);
+                scene.appendChild(assets);
+                scene.appendChild(marker);
+                scene.appendChild(createElement('a-obj-model', {
+                    'src': '#trigger-obj',
+                    'mtl': '#trigger-mtl',
+                    'position': '0 0 -3',
+                }));
+
+                AFRAME.registerComponent('handle-events', {
+                    init: function () {
+                        var trigger = this.el;  // <a-box>
+
+                        trigger.addEventListener('mouseup', function () {
+
+                            for (var i = 0; i < question.options.length; i++) {
+                                trigger.parentNode.appendChild(createOption(i, question.options[i], question));
+                            }
+
+                            trigger.parentNode.removeChild(trigger);
+                        });
+                    }
+                });
+
+
+            };
+
+            buildQuestion(question);
+
         });
     </script>
 
 </head>
-<body style='margin : 0px; overflow: hidden;'>
-<a-scene embedded arjs>
-    <a-marker preset="hiro">
-
-        <a-plane color="#CCC" height="2" width="2" handle-events>
-
-            <a-text value="Hello, World!"  rotation="270 0 0" color="black"></a-text>
-            <!--<a-animation attribute="rotation" begin="click" dur="500" fill="backwards" to="30 30 360"></a-animation>-->
-        </a-plane>
-    </a-marker>
-    <a-entity position="0 0 0">
-        <a-camera cursor="rayOrigin:mouse"></a-camera>
-    </a-entity>
-    <!--<a-entity camera look-controls mouse-cursor></a-entity>			-->
-</a-scene>
-
-</body>
+<body style='margin : 0px; overflow: hidden;'></body>
 </html>
